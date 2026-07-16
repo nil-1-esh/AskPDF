@@ -13,7 +13,12 @@ dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: [
+        'http://localhost:5173',
+        'https://ask-pdf-dusky.vercel.app'
+    ]
+}));
 
 app.use('/api', uploadRoutes);
 app.use('/api', documentRoutes);
