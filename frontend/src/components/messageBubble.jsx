@@ -4,6 +4,7 @@ const CITATION_REGEX = /\[([^,\]]+),\s*p\.(\d+)\]/g;
 
 export default function MessageBubble({ role, text, sources = [] }) {
     const isUser = role === 'user';
+    const isUnanswered = !isUser && /don't know based on these documents/i.test(text);
 
     const renderWithCitations = (content) => {
         const parts = [];
@@ -23,7 +24,11 @@ export default function MessageBubble({ role, text, sources = [] }) {
     return (
         <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
             <div
-                className={`max-w-[80%] rounded-md px-3.5 py-2.5 text-sm leading-relaxed ${isUser ? 'bg-[#1F5147] text-white' : 'bg-white border border-line text-[#1B1F22]'
+                className={`max-w-[80%] rounded-md px-3.5 py-2.5 text-sm leading-relaxed ${isUser
+                    ? 'bg-[#1F5147] text-white'
+                    : isUnanswered
+                        ? 'bg-[#F9F1E6] border border-brass-light text-ink-muted italic'
+                        : 'bg-white border border-line text-[#1B1F22]'
                     }`}
             >
                 {isUser ? text : renderWithCitations(text) || <span className="text-ink-muted">…</span>}

@@ -1,11 +1,11 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const streamChat = async ({ question, documentIds, history, onToken, onDone, onError }) => {
+export const streamChat = async ({ question, documentIds, history, sessionId, onToken, onDone, onError }) => {
     try {
         const res = await fetch(`${BASE_URL}/chat/stream`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question, documentIds, history })
+            body: JSON.stringify({ question, documentIds, history, sessionId })
         });
 
         const reader = res.body.getReader();

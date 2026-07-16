@@ -15,3 +15,10 @@ export const fetchDocuments = async () => {
     const data = await res.json();
     return data.documents;
 };
+
+export const fetchHistory = async (sessionId) => {
+    const res = await fetch(`${BASE_URL}/chat/history/${sessionId}`);
+    if (!res.ok) throw new Error('Failed to fetch history');
+    const data = await res.json();
+    return data.messages;
+};

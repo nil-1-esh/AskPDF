@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchDocuments } from '../api/api';
+import { fetchDocuments, fetchHistory } from '../api/api';
 import { streamChat } from '../hooks/useChatStream';
+import { getSessionId, startNewSession } from '../utils/session';
 import SourceSelector from '../components/SourceSelector';
 import ChatWindow from '../components/ChatWindow';
 import EmptyState from '../components/EmptyState';
@@ -11,6 +12,7 @@ export default function ChatPage() {
     const [selectedIds, setSelectedIds] = useState([]);
     const [messages, setMessages] = useState([]);
     const [isStreaming, setIsStreaming] = useState(false);
+    const [sessionId, setSessionId] = useState(getSessionId());
 
     const loadDocuments = useCallback(async () => {
         try {
@@ -24,8 +26,19 @@ export default function ChatPage() {
         loadDocuments();
     }, [loadDocuments]);
 
+    useEffect(() => {
+        fetchHistory(sessionId)
+            .then((history) => setMessages(history.map((m) => ({ role: m.role, text: m.text, sources: m.sources }))))
+            .catch((err) => console.error(err));
+    }, [sessionId]);
+
     const toggleDocument = (id) => {
         setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    };
+
+    const handleNewChat = () => {
+        setSessionId(startNewSession());
+        setMessages([]);
     };
 
     const handleSend = (question) => {
@@ -39,6 +52,7 @@ export default function ChatPage() {
             question,
             documentIds: selectedIds,
             history,
+            sessionId,
             onToken: (token) => {
                 setMessages((prev) => {
                     const updated = [...prev];
@@ -65,18 +79,19 @@ export default function ChatPage() {
         return (
             <EmptyState
                 title="No sources yet"
-                body={
-                    <>
-                        Visit the <Link to="/library" className="text-teal underline">Shelf</Link> to upload a PDF before asking questions.
-                    </>
-                }
+                body={<>Visit the <Link to="/library" className="text-teal underline">Shelf</Link> to upload a PDF before asking questions.</>}
             />
         );
     }
 
     return (
         <div>
-            <SourceSelector documents={documents} selectedIds={selectedIds} onToggle={toggleDocument} />
+            <div className="flex justify-between items-center mb-3">
+                <SourceSelector documents={documents} selectedIds={selectedIds} onToggle={toggleDocument} />
+                <button onClick={handleNewChat} className="text-xs font-mono text-ink-muted hover:text-teal shrink-0 ml-2">
+                    + New chat
+                </button>
+            </div>
             <ChatWindow messages={messages} onSend={handleSend} isStreaming={isStreaming} />
         </div>
     );

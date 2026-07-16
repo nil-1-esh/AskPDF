@@ -1,15 +1,25 @@
-import { contextualizeQuestion, generateAnswer } from '../utils/generateAnswer.js';
+import ChatMessage from '../models/ChatMessage.js';
+import { contextualizeQuestion, generateAnswer, generateAnswerStream } from '../utils/generateAnswer.js';
 import { retrieveChunks } from '../utils/retrieveChunks.js';
 import { buildPrompt } from '../utils/buildPrompt.js';
 import { verifyCitations } from '../utils/verifyCitations.js';
-import { generateAnswerStream } from '../utils/generateAnswer.js';
+
+const saveExchange = async (sessionId, question, answer, sources) => {
+    await ChatMessage.insertMany([
+        { sessionId, role: 'user', text: question, sources: [] },
+        { sessionId, role: 'model', text: answer, sources }
+    ]);
+};
 
 export const handleChat = async (req, res) => {
     try {
-        const { question, documentIds = [], history = [] } = req.body;
+        const { question, documentIds = [], history = [], sessionId } = req.body;
 
         if (!question || question.trim() === '') {
             return res.status(400).json({ error: 'Question is required' });
+        }
+        if (!sessionId) {
+            return res.status(400).json({ error: 'sessionId is required' });
         }
 
         const standaloneQuestion = await contextualizeQuestion(question, history);
@@ -26,9 +36,7 @@ export const handleChat = async (req, res) => {
         }));
 
         const citationCheck = verifyCitations(answer, sources);
-        if (citationCheck.hasHallucinatedCitations) {
-            console.warn('Hallucinated citations detected:', citationCheck.invalid);
-        }
+        await saveExchange(sessionId, question, answer, sources);
 
         res.json({ answer, sources, citationCheck });
     } catch (err) {
@@ -37,13 +45,15 @@ export const handleChat = async (req, res) => {
     }
 };
 
-
 export const handleChatStream = async (req, res) => {
     try {
-        const { question, documentIds = [], history = [] } = req.body;
+        const { question, documentIds = [], history = [], sessionId } = req.body;
 
         if (!question || question.trim() === '') {
             return res.status(400).json({ error: 'Question is required' });
+        }
+        if (!sessionId) {
+            return res.status(400).json({ error: 'sessionId is required' });
         }
 
         const standaloneQuestion = await contextualizeQuestion(question, history);
@@ -59,18 +69,28 @@ export const handleChatStream = async (req, res) => {
 
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');
-        res.setHeader('Connection', 'keep-alive'); //this is a sse event(server-side event)
+        res.setHeader('Connection', 'keep-alive'); //this is a sse (server-side event)
+        res.flushHeaders();
 
         const stream = await generateAnswerStream(prompt, history);
         let fullAnswer = '';
 
-        for await (const chunk of stream) {
-            const text = chunk.text || '';
-            fullAnswer += text;
-            res.write(`data: ${JSON.stringify({ type: 'token', text })}\n\n`);
+        try {
+            for await (const chunk of stream) {
+                const text = chunk.text || '';
+                fullAnswer += text;
+                res.write(`data: ${JSON.stringify({ type: 'token', text })}\n\n`);
+            }
+        } catch (streamErr) {
+            console.error('Stream interrupted mid-answer:', streamErr.message);
+            res.write(`data: ${JSON.stringify({ type: 'error', error: 'Answer was interrupted. Please try again.' })}\n\n`);
+            res.end();
+            return;
         }
 
         const citationCheck = verifyCitations(fullAnswer, sources);
+        await saveExchange(sessionId, question, fullAnswer, sources);
+
         res.write(`data: ${JSON.stringify({ type: 'done', sources, citationCheck })}\n\n`);
         res.end();
     } catch (err) {
@@ -79,4 +99,3 @@ export const handleChatStream = async (req, res) => {
         res.end();
     }
 };
-
