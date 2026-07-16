@@ -5,7 +5,7 @@ export default function AppLayout() {
         <div className="min-h-screen bg-paper text-ink font-body">
             <header className="border-b border-line bg-paper-alt">
                 <div className="max-w-4xl mx-auto px-6 pt-6">
-                    <h1 className="font-display text-2xl font-semibold tracking-tight">The Reading Room</h1>
+                    <h1 className="font-display text-2xl font-semibold tracking-tight">AskPDF</h1>
                     <p className="text-sm text-ink-muted mb-4">Ask questions of your documents, with sources cited.</p>
                     <nav className="flex gap-1">
                         {[
