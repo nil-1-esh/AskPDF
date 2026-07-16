@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import AppLayout from './layouts/AppLayout';
-import ChatPage from './pages/ChatPage';
+import AppLayout from './layouts/appLayout';
+import ChatPage from './pages/chatPage';
 import LibraryPage from './pages/libraryPage';
 
 export default function App() {
