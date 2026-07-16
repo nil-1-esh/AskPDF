@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
-import MessageBubble from './MessageBubble';
-import ChatInput from './ChatInput';
-import EmptyState from './EmptyState';
+import MessageBubble from './messageBubble';
+import ChatInput from './chatInput';
+import EmptyState from './emptyState';
 
 export default function ChatWindow({ messages, onSend, isStreaming }) {
     const bottomRef = useRef(null);

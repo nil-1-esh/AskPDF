@@ -2,9 +2,6 @@
 
 Upload multiple PDFs and ask questions across them — get grounded, cited answers that point back to the exact document and page a fact came from.
 
-**Live demo:** https://askpdf-ai.vercel.app
-**Backend API:** https://askpdf-ai.onrender.com/api
-
 ---
 
 ## What it does

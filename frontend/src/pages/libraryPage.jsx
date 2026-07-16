@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchDocuments } from '../api/api';
-import DocumentUpload from '../components/DocumentUpload';
-import SpineCard from '../components/SpineCard';
-import EmptyState from '../components/EmptyState';
+import DocumentUpload from '../components/documentUpload';
+import SpineCard from '../components/spineCard';
+import EmptyState from '../components/emptyState';
 
 export default function LibraryPage() {
     const [documents, setDocuments] = useState([]);

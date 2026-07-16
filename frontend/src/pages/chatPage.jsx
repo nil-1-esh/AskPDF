@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { fetchDocuments, fetchHistory } from '../api/api';
 import { streamChat } from '../hooks/useChatStream';
 import { getSessionId, startNewSession } from '../utils/session';
-import SourceSelector from '../components/SourceSelector';
-import ChatWindow from '../components/ChatWindow';
-import EmptyState from '../components/EmptyState';
+import SourceSelector from '../components/sourceSelector';
+import ChatWindow from '../components/chatWindow';
+import EmptyState from '../components/emptyState';
 
 export default function ChatPage() {
     const [documents, setDocuments] = useState([]);

@@ -1,4 +1,4 @@
-import CitationTag from './CitationTag';
+import CitationTag from './citationTag';
 
 const CITATION_REGEX = /\[([^,\]]+),\s*p\.(\d+)\]/g;
 
